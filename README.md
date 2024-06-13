@@ -1,5 +1,5 @@
 
-# My Messanger APi
+# My Messanger API
 
 # Tech
 ---
@@ -34,3 +34,22 @@
 ---
 
 docker-compose.yml に Honoコンテナを設定して使用すること
+
+# URL
+---
+
+- Bun
+
+https://bun.sh/guides/ecosystem/nextjs
+
+- Hono
+
+https://hono.dev/getting-started/basic
+
+- Supabase
+
+https://supabase.com
+
+- Prisma
+
+https://www.prisma.io

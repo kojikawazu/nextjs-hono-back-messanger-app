@@ -82,6 +82,10 @@ variable "ecs_ws_port" {
   type = number
 }
 
+variable "ecs_https_ws_port" {
+  type = number
+}
+
 variable "ecs_desired_count" {
   type = number
 }
@@ -135,5 +139,9 @@ variable "secret_supabase_reference_id" {
 }
 
 variable "elb_health_url" {
+  type = string
+}
+
+variable "domain" {
   type = string
 }

@@ -23,19 +23,12 @@ resource "aws_lb_listener" "alb_listener_http" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group.arn
-  }
-}
-
-resource "aws_lb_listener" "alb_listener_ws" {
-  load_balancer_arn = aws_lb.alb.arn
-  port              = var.ecs_ws_port
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
+    type = "redirect"
+    redirect {
+      protocol    = "HTTPS"
+      port        = var.https_port
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -52,9 +45,9 @@ resource "aws_lb_listener" "alb_listener_https" {
   }
 }
 
-resource "aws_lb_listener" "alb_listener_https_ws" {
+resource "aws_lb_listener" "alb_listener_wws" {
   load_balancer_arn = aws_lb.alb.arn
-  port              = var.ecs_https_ws_port
+  port              = var.ecs_ws_port
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = aws_acm_certificate.tokyo_cert.arn
@@ -68,38 +61,6 @@ resource "aws_lb_listener" "alb_listener_https_ws" {
 # ---------------------------------------------
 # ELB - リスナールール
 # ---------------------------------------------
-resource "aws_lb_listener_rule" "alb_listerner_rule" {
-  listener_arn = aws_lb_listener.alb_listener_http.arn
-
-  # 受け取ったトラフィックをターゲットグループへ受け渡す
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["*"]
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "alb_listerner_rule_ws" {
-  listener_arn = aws_lb_listener.alb_listener_ws.arn
-
-  # 受け取ったトラフィックをターゲットグループへ受け渡す
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["*"]
-    }
-  }
-}
-
 resource "aws_lb_listener_rule" "alb_listener_rule_https" {
   listener_arn = aws_lb_listener.alb_listener_https.arn
 
@@ -115,8 +76,8 @@ resource "aws_lb_listener_rule" "alb_listener_rule_https" {
   }
 }
 
-resource "aws_lb_listener_rule" "alb_listener_rule_https_ws" {
-  listener_arn = aws_lb_listener.alb_listener_https_ws.arn
+resource "aws_lb_listener_rule" "alb_listener_rule_wws" {
+  listener_arn = aws_lb_listener.alb_listener_wws.arn
 
   action {
     type             = "forward"
@@ -161,18 +122,18 @@ resource "aws_lb_target_group" "alb_target_group" {
 }
 
 resource "aws_lb_target_group" "alb_target_group_ws" {
-  name = "${var.project}-${var.environment}-tgw"
+  name = "${var.project}-${var.environment}tgw"
 
   vpc_id = aws_vpc.vpc.id
   # ALBからECS
   port        = var.ecs_ws_port
-  protocol    = "HTTP"
+  protocol    = "HTTPS"
   target_type = "ip"
 
   health_check {
     interval            = 30
-    path                = "/api/hello"
-    port                = "traffic-port"
+    path                = "/ws-health"
+    port                = var.ecs_ws_health_port
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 3
@@ -181,7 +142,7 @@ resource "aws_lb_target_group" "alb_target_group_ws" {
   }
 
   tags = {
-    Name    = "${var.project}-${var.environment}-tgw"
+    Name    = "${var.project}-${var.environment}tgw"
     Project = var.project
     Env     = var.environment
   }

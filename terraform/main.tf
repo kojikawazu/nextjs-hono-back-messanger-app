@@ -86,6 +86,10 @@ variable "ecs_https_ws_port" {
   type = number
 }
 
+variable "ecs_ws_health_port" {
+  type = number
+}
+
 variable "ecs_desired_count" {
   type = number
 }

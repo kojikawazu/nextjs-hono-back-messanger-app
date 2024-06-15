@@ -36,13 +36,23 @@ resource "aws_security_group_rule" "elb_in_https" {
   cidr_blocks = [var.igw_address]
 }
 
-resource "aws_security_group_rule" "elb_in_ws" {
+resource "aws_security_group_rule" "elb_in_wss" {
   security_group_id = aws_security_group.elb_sg.id
 
   type        = var.security_in_bound
   protocol    = "tcp"
   from_port   = var.ecs_ws_port
   to_port     = var.ecs_ws_port
+  cidr_blocks = [var.igw_address]
+}
+
+resource "aws_security_group_rule" "elb_in_health" {
+  security_group_id = aws_security_group.elb_sg.id
+
+  type        = var.security_in_bound
+  protocol    = "tcp"
+  from_port   = var.ecs_ws_health_port
+  to_port     = var.ecs_ws_health_port
   cidr_blocks = [var.igw_address]
 }
 
@@ -91,6 +101,16 @@ resource "aws_security_group_rule" "ens_in_ws" {
   protocol                 = "tcp"
   from_port                = var.ecs_ws_port
   to_port                  = var.ecs_ws_port
+  source_security_group_id = aws_security_group.elb_sg.id
+}
+
+resource "aws_security_group_rule" "ens_in_health" {
+  security_group_id = aws_security_group.ecs_sg.id
+
+  type                     = var.security_in_bound
+  protocol                 = "tcp"
+  from_port                = var.ecs_ws_health_port
+  to_port                  = var.ecs_ws_health_port
   source_security_group_id = aws_security_group.elb_sg.id
 }
 

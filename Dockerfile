@@ -23,5 +23,7 @@ COPY . .
 RUN bunx prisma generate
 
 EXPOSE 3000
+EXPOSE 3001
+EXPOSE 3002
 
 CMD ["bun", "dev"]

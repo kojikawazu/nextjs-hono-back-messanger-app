@@ -1,6 +1,7 @@
 # deps
 node_modules/
 private/
+certs/
 .env
 
 terraform/.terraform

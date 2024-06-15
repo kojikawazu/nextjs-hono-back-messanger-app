@@ -25,6 +25,16 @@ resource "aws_ecs_task_definition" "ecs_task_def" {
           containerPort = var.ecs_port,
           hostPort      = var.ecs_port,
           protocol      = "tcp"
+        },
+        {
+          containerPort = var.ecs_ws_port,
+          hostPort      = var.ecs_ws_port,
+          protocol      = "tcp"
+        },
+        {
+          containerPort = var.ecs_ws_health_port,
+          hostPort      = var.ecs_ws_health_port,
+          protocol      = "tcp"
         }
       ],
       logConfiguration = {
@@ -123,5 +133,11 @@ resource "aws_ecs_service" "ecs_service" {
     target_group_arn = aws_lb_target_group.alb_target_group.arn
     container_name   = var.ecs_container_name
     container_port   = var.ecs_port
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
+    container_name   = var.ecs_container_name
+    container_port   = var.ecs_ws_port
   }
 }

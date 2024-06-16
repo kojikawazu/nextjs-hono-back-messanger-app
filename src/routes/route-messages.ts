@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
-import { getWebSocketServer } from '../services/webSocketService';
+import { getWebSocketServer } from '../services/websocket-service';
 
 /** Honoインスタンス */
 const messages = new Hono();

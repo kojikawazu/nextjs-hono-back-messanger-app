@@ -146,6 +146,10 @@ variable "elb_health_url" {
   type = string
 }
 
+variable "elb_ws_health_url" {
+  type = string
+}
+
 variable "domain" {
   type = string
 }

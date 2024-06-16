@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getTestWebSocketServer } from './webSocketService';
+import { getTestWebSocketServer } from './websocket-service';
 
 /**
  * これはUTではありません
@@ -22,7 +22,6 @@ const testWebSocketMessages = new Hono();
  */
 testWebSocketMessages.post('/', async (c) => {
     const { message } = await c.req.json();
-    console.log("debug");
 
     const wss = getTestWebSocketServer();
     wss.clients.forEach(client => {

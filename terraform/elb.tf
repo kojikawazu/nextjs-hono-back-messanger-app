@@ -45,19 +45,6 @@ resource "aws_lb_listener" "alb_listener_https" {
   }
 }
 
-resource "aws_lb_listener" "alb_listener_wws" {
-  load_balancer_arn = aws_lb.alb.arn
-  port              = var.ecs_ws_port
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.tokyo_cert.arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
-  }
-}
-
 # ---------------------------------------------
 # ELB - リスナールール
 # ---------------------------------------------
@@ -76,8 +63,8 @@ resource "aws_lb_listener_rule" "alb_listener_rule_https" {
   }
 }
 
-resource "aws_lb_listener_rule" "alb_listener_rule_wws" {
-  listener_arn = aws_lb_listener.alb_listener_wws.arn
+resource "aws_lb_listener_rule" "alb_listener_rule_ws" {
+  listener_arn = aws_lb_listener.alb_listener_https.arn
 
   action {
     type             = "forward"
@@ -86,7 +73,7 @@ resource "aws_lb_listener_rule" "alb_listener_rule_wws" {
 
   condition {
     path_pattern {
-      values = ["*"]
+      values = ["/ws/*"]
     }
   }
 }
@@ -127,12 +114,12 @@ resource "aws_lb_target_group" "alb_target_group_ws" {
   vpc_id = aws_vpc.vpc.id
   # ALBからECS
   port        = var.ecs_ws_port
-  protocol    = "HTTPS"
+  protocol    = "HTTP"
   target_type = "ip"
 
   health_check {
     interval            = 30
-    path                = "/ws-health"
+    path                = var.elb_ws_health_url
     port                = var.ecs_ws_health_port
     protocol            = "HTTP"
     timeout             = 5

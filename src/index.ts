@@ -2,8 +2,8 @@ import { Hono } from 'hono';
 import { serve } from 'bun';
 import { cors } from 'hono/cors';
 import { config } from './config';
-import { setupWebSocketServer } from './services/webSocketService';
-import messages from './routes/routeMessages';
+import { setupWebSocketServer } from './services/websocket-service';
+import messages from './routes/route-messages';
 
 // Honoのインスタンスを作成
 const app = new Hono().basePath('/api');

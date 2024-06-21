@@ -48,6 +48,21 @@ resource "aws_lb_listener" "alb_listener_https" {
 # ---------------------------------------------
 # ELB - リスナールール
 # ---------------------------------------------
+resource "aws_lb_listener_rule" "alb_listener_rule_ws" {
+  listener_arn = aws_lb_listener.alb_listener_https.arn
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/ws*"]
+    }
+  }
+}
+
 resource "aws_lb_listener_rule" "alb_listener_rule_https" {
   listener_arn = aws_lb_listener.alb_listener_https.arn
 
@@ -59,21 +74,6 @@ resource "aws_lb_listener_rule" "alb_listener_rule_https" {
   condition {
     path_pattern {
       values = ["*"]
-    }
-  }
-}
-
-resource "aws_lb_listener_rule" "alb_listener_rule_ws" {
-  listener_arn = aws_lb_listener.alb_listener_https.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group_ws.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/ws/*"]
     }
   }
 }

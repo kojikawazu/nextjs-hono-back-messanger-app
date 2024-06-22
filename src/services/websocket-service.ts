@@ -34,7 +34,7 @@ export function setupWebSocketServer(port: number) {
                 console.log(`[Back] Current clients size: ${clients.size}`);
 
                 setTimeout(() => {
-                    ws.send('connected!');
+                    //ws.send('connected!');
                     console.log('-sent connected-');
                 }, 1);
             },

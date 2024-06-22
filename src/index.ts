@@ -36,6 +36,5 @@ serve({
 });
 
 console.log(`HTTPS server running on port:${config.port}`);
-//console.log(`WebSocket server running on port:${config.wsPort}`);
 
 export default app;

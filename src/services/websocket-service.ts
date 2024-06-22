@@ -1,10 +1,9 @@
 import { Hono } from 'hono';
-import { serve } from 'bun';
-import { WebSocketServer } from "ws";
+import { serve, ServerWebSocket } from 'bun';
 
 const healthService = new Hono();
 const health_port = 3002;
-let wss: WebSocketServer;
+let clients = new Set<ServerWebSocket<undefined>>();
 
 /**
  * WebSocketServerのセットアップ
@@ -13,7 +12,6 @@ let wss: WebSocketServer;
  */
 export function setupWebSocketServer(port: number) {
     console.log(`setupWebSocketServer: port=${port}`);
-    wss = new WebSocketServer({ port });
 
     healthService.get('/ws-health', (c) => {
         console.log(`socketService: Hello Hono!`);
@@ -30,8 +28,15 @@ export function setupWebSocketServer(port: number) {
     serve({
         port: port,
         websocket: {
-            open(ws) {
-                console.log(`[Back] WebSocket connection opened`);
+            open(ws: ServerWebSocket<undefined>) {
+                console.log(`[Back] WebSocket connection established`);
+                clients.add(ws);
+                console.log(`[Back] Current clients size: ${clients.size}`);
+
+                setTimeout(() => {
+                    ws.send('connected!');
+                    console.log('-sent connected-');
+                }, 1);
             },
 
             async message(ws, message) {
@@ -47,8 +52,10 @@ export function setupWebSocketServer(port: number) {
                 const messageWithUser = { content, user: { id: userId, name: 'Unknown' } };
                 console.log(`[Back] Broadcasting message: ${JSON.stringify(messageWithUser)}`); 
             },
-            close(ws) {
+            close(ws: ServerWebSocket<undefined>) {
                 console.log(`[Back] WebSocket connection closed`);
+                clients.delete(ws);
+                console.log(`[Back] Current clients size: ${clients.size}`);
             },
         },
 
@@ -62,9 +69,8 @@ export function setupWebSocketServer(port: number) {
     });
 
     console.log(`WebSocketServer is running on port ${port}`);
-    return wss;
 }
 
-export function getWebSocketServer() {
-    return wss;
+export function getClients() {
+    return clients;
 }

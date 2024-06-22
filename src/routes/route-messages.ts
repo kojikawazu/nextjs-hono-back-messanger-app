@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
-import { getWebSocketServer } from '../services/websocket-service';
+import { getClients } from '../services/websocket-service';
 
 /** Honoインスタンス */
 const messages = new Hono();
@@ -20,11 +20,13 @@ messages.get('/', async (c) => {
 });
 
 messages.post('/', async (c) => {
-  const { content, userId } = await c.req.json();
+    console.log('POST start');
+    const { content, userId } = await c.req.json();
 
   if (!content || !userId) {
       return c.json({ error: 'Invalid request' }, 400);
   }
+  console.log('Valid, OK');
 
   try {
       const newMessage = await prisma.message.create({
@@ -33,20 +35,28 @@ messages.post('/', async (c) => {
               userId,
           },
       });
+      console.log('Prisma created');
 
       const messageWithUser = await prisma.message.findUnique({
           where: { id: newMessage.id },
           include: { user: true },
       });
+      console.log('Prisma messageWithUser');
 
       // [ブロードキャスト]
-      const wss = getWebSocketServer();
-      wss.clients.forEach(client => {
+      const clients = getClients();
+      console.debug(`clients.size: ${clients.size}`);
+      clients.forEach(client => {
+        console.log('Broadcast start');
+        console.debug(`Broadcast: ${client}`);
         if (client.readyState === WebSocket.OPEN) {
+            console.debug(`Broadcast send. ${messageWithUser}`);
             client.send(JSON.stringify({ messageWithUser }));
         }
+        console.log('Broadcast end');
       });
 
+      console.log('POST end.');
       return c.json(messageWithUser, 201);
   } catch (err) {
       return c.json({ error: 'Failed to create message' }, 500);

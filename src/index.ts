@@ -36,6 +36,6 @@ serve({
   port: config.port,
 });
 
-console.log(`HTTPS server running on port:${config.port}`);
+console.log(`HTTP server running on port:${config.port}`);
 
 export default app;

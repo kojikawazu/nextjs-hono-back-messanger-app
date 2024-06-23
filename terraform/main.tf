@@ -90,6 +90,10 @@ variable "ecs_ws_health_port" {
   type = number
 }
 
+variable "redis_port" {
+  type = number
+}
+
 variable "ecs_desired_count" {
   type = number
 }
@@ -152,4 +156,32 @@ variable "elb_ws_health_url" {
 
 variable "domain" {
   type = string
+}
+
+variable "redis_family" {
+  type = string
+}
+
+variable "redis_snapshot_range" {
+  type = string
+}
+
+variable "redis_cluster_id" {
+  description = "The ID of the ElastiCache Redis cluster"
+  type        = string
+}
+
+variable "redis_node_type" {
+  description = "The instance type of the Redis node"
+  type        = string
+}
+
+variable "redis_num_nodes" {
+  description = "The number of cache nodes"
+  type        = number
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the ElastiCache cluster"
+  type        = list(string)
 }

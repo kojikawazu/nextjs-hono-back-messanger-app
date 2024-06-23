@@ -37,6 +37,12 @@ resource "aws_ecs_task_definition" "ecs_task_def" {
           protocol      = "tcp"
         }
       ],
+      environment = [
+        {
+          name  = "REDIS_URL",
+          value = "redis://${aws_elasticache_cluster.elasticache_cluster_redis_cluster.cache_nodes[0].address}:${aws_elasticache_cluster.elasticache_cluster_redis_cluster.port}"
+        }
+      ],
       logConfiguration = {
         logDriver = "awslogs",
         options = {

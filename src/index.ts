@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { serve } from 'bun';
 import { cors } from 'hono/cors';
 import { config } from './config';
+import { ROUTE_URL } from './utils/common-constants';
 import { setupWebSocketServer } from './services/websocket-service';
 import messages from './routes/route-messages';
 
@@ -20,12 +21,12 @@ app.use('*', cors({
 setupWebSocketServer(config.wsPort);
 
 // テスト用エンドポイント
-app.get('/hello', (c) => {
+app.get(ROUTE_URL.ROUTE_BASE, (c) => {
   console.log(`index: Hello Hono!`);
   return c.text('Hello Hono!');
 });
 
-app.route('/messages', messages);
+app.route(ROUTE_URL.ROUTE_MESSAGE, messages);
 
 console.log('Setting up HTTPS server...');
 

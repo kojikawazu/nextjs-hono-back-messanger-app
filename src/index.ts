@@ -13,7 +13,7 @@ const app = new Hono().basePath('/api');
 const CORS_ADDRESS = config.corsAddress;
 app.use('*', cors({
   origin: CORS_ADDRESS,
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization']
 }));
 

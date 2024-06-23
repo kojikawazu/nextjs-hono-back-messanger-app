@@ -7,60 +7,172 @@ const messages = new Hono();
 /** Prismaクライアントインスタンス */
 const prisma = new PrismaClient();
 
+/**
+ * メッセージデータの取得
+ */
 messages.get('/', async (c) => {
-  try {
-      const allowMessages = await prisma.message.findMany({
-          include: { user: true },
-          orderBy: { createdAt: 'asc' },
-      });
-      return c.json(allowMessages);
-  } catch (err) {
-      return c.json({ error: 'Failed to fetch messages' }, 500);
-  }
+    console.log('[Back] /messages GET start...');
+    try {
+        const allowMessages = await prisma.message.findMany({
+            include: { user: true },
+            orderBy: { createdAt: 'asc' },
+        });
+
+        console.log('[Back] /messages GET end.');
+        return c.json(allowMessages);
+    } catch (err) {
+        return c.json({ error: 'Failed to fetch messages' }, 500);
+    }
 });
 
+/**
+ * メッセージデータの追加
+ */
 messages.post('/', async (c) => {
-    console.log('POST start');
+    console.log('[Back] /messages POST start');
     const { content, userId } = await c.req.json();
 
-  if (!content || !userId) {
-      return c.json({ error: 'Invalid request' }, 400);
-  }
-  console.log('Valid, OK');
+    if (!content || !userId) {
+        console.error('[Back] Invalid request[400]');
+        return c.json({ error: 'Invalid request' }, 400);
+    }
+    console.log('Valid, OK');
 
-  try {
-      const newMessage = await prisma.message.create({
-          data: {
-              content,
-              userId,
-          },
-      });
-      console.log('Prisma created');
+    try {
+        const newMessage = await prisma.message.create({
+            data: {
+                content,
+                userId,
+            },
+        });
+        console.log('[Back] Prisma created');
 
-      const messageWithUser = await prisma.message.findUnique({
-          where: { id: newMessage.id },
-          include: { user: true },
-      });
-      console.log('Prisma messageWithUser');
+        const messageWithUser = await prisma.message.findUnique({
+            where: { id: newMessage.id },
+            include: { user: true },
+        });
+        console.log('[Back] Prisma messageWithUser');
 
-      // [ブロードキャスト]
-      const clients = getClients();
-      console.debug(`clients.size: ${clients.size}`);
-      clients.forEach(client => {
-        console.log('Broadcast start');
-        console.debug(`Broadcast: ${client}`);
-        if (client.readyState === WebSocket.OPEN) {
-            console.debug(`Broadcast send. ${messageWithUser}`);
-            client.send(JSON.stringify({ messageWithUser }));
+        // [ブロードキャスト]
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
+            console.log('[Back] Broadcast start');
+            console.debug(`[Back] Broadcast: ${client}`);
+            if (client.readyState === WebSocket.OPEN) {
+                console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'sendMessage', message: messageWithUser })}`);
+                client.send(JSON.stringify({ action: 'sendMessage', message: messageWithUser }));
+            }
+            console.log('[Back] Broadcast end');
+        });
+
+        console.log('[Back] /messages POST end.');
+        return c.json(messageWithUser, 201);
+    } catch (err) {
+        return c.json({ error: 'Failed to create message' }, 500);
+    }
+});
+
+/**
+ * メッセージデータの更新
+ */
+messages.put('/:messageId', async (c) => {
+    console.log('[Back] /messages PUT start');
+    const { messageId } = c.req.param();
+    const { content }   = await c.req.json();
+
+    if (!content) {
+        console.error('[Back] Invalid request[400]');
+        return c.json({ error: 'Invalid request' }, 400);
+    }
+
+    try {
+        const message = await prisma.message.findUnique({
+            where: { id: messageId },
+        });
+        console.log('[Back] Prisma get.');
+
+        if (!message) {
+            console.error('[Back] Message not found.[404]');
+            return c.json({ error: 'Message not found.'}, 404);
         }
-        console.log('Broadcast end');
-      });
+        console.log('[Back] Valid, OK');
 
-      console.log('POST end.');
-      return c.json(messageWithUser, 201);
-  } catch (err) {
-      return c.json({ error: 'Failed to create message' }, 500);
-  }
+        const updatedMessage= await prisma.message.update({
+            where: {
+                id: messageId,
+            },
+            data: {
+                content: content,
+            },
+            include: { user: true },
+        });
+        console.log('[Back] Prisma updated');
+
+        // [ブロードキャスト]
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
+            console.log('[Back] Broadcast start');
+            console.debug(`[Back] Broadcast: ${client}`);
+            if (client.readyState === WebSocket.OPEN) {
+                console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'updateMessage', message: updatedMessage  })}`);
+                client.send(JSON.stringify({ action: 'updateMessage', message: updatedMessage  }));
+            }
+            console.log('[Back] Broadcast end');
+        });
+
+        console.log('[Back] /messages PUT end.');
+        return c.json(updatedMessage, 200);
+    } catch (err) {
+        return c.json({ error: 'Failed to create message' }, 500);
+    }
+});
+
+/**
+ * メッセージデータの削除
+ */
+messages.delete('/:messageId', async (c) => {
+    console.log('[Back] /messages DELETE start');
+    const { messageId } = c.req.param();
+
+    try {
+        const message = await prisma.message.findUnique({
+            where: { id: messageId },
+        });
+        console.log('[Back] Prisma get.');
+        
+        if (!message) {
+            console.error('[Back] Message not found[404]');
+            return c.json({ error: 'Message not found.'}, 404);
+        }
+
+        await prisma.message.delete({
+            where: {id: messageId },
+        });
+        console.log('[Back] Prisma deleted');
+
+        // [ブロードキャスト]
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
+            console.log('[Back] Broadcast start');
+            console.debug(`[Back] Broadcast: ${client}`);
+            
+            if (client.readyState === WebSocket.OPEN) {
+                console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'deleteMessage', messageId })}`);
+                client.send(JSON.stringify({ action: 'deleteMessage', messageId }));
+            }
+
+            console.log('Broadcast end');
+        });
+
+        console.log('[Back] /messages DELETE end.');
+        return c.text('', 204);
+    } catch (err) {
+        console.error('[Back] Failed to delete message:', err);
+        return c.json({ error: 'Failed to delete message' }, 500);
+    }
 });
 
 export default messages;

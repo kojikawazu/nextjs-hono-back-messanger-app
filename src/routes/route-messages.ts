@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
-import { getClients, getClient, getClientIds } from '../services/websocket-service';
+import { getClients, getClient } from '../services/websocket-service';
 
 /** Honoインスタンス */
 const messages = new Hono();
@@ -55,30 +55,17 @@ messages.post('/', async (c) => {
         console.log('[Back] Prisma messageWithUser');
 
         // [ブロードキャスト]
-        const clientIds = await getClientIds();
-        console.debug(`[Back] clients.size: ${clientIds.length}`);
-        clientIds.forEach(async (clientId) => {
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
             console.log('[Back] Broadcast start');
-            const client = await getClient(clientId);
             console.debug(`[Back] Broadcast: ${client}`);
-
-            if (client) {
+            if (client.readyState === WebSocket.OPEN) {
                 console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'sendMessage', message: messageWithUser })}`);
                 client.send(JSON.stringify({ action: 'sendMessage', message: messageWithUser }));
             }
             console.log('[Back] Broadcast end');
         });
-        //const clients = getClients();
-        // console.debug(`[Back] clients.size: ${clients.size}`);
-        // clients.forEach(client => {
-        //     console.log('[Back] Broadcast start');
-        //     console.debug(`[Back] Broadcast: ${client}`);
-        //     if (client.readyState === WebSocket.OPEN) {
-        //         console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'sendMessage', message: messageWithUser })}`);
-        //         client.send(JSON.stringify({ action: 'sendMessage', message: messageWithUser }));
-        //     }
-        //     console.log('[Back] Broadcast end');
-        // });
 
         console.log('[Back] /messages POST end.');
         return c.json(messageWithUser, 201);
@@ -125,31 +112,17 @@ messages.put('/:messageId', async (c) => {
         console.log('[Back] Prisma updated');
 
         // [ブロードキャスト]
-        const clientIds = await getClientIds();
-        console.debug(`[Back] clients.size: ${clientIds.length}`);
-        clientIds.forEach(async (clientId) => {
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
             console.log('[Back] Broadcast start');
-            const client = await getClient(clientId);
             console.debug(`[Back] Broadcast: ${client}`);
-
-            if (client) {
+            if (client.readyState === WebSocket.OPEN) {
                 console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'updateMessage', message: updatedMessage  })}`);
                 client.send(JSON.stringify({ action: 'updateMessage', message: updatedMessage  }));
             }
-
-            console.log('[Back] Broadcast end');       
+            console.log('[Back] Broadcast end');
         });
-        // const clients = getClients();
-        // console.debug(`[Back] clients.size: ${clients.size}`);
-        // clients.forEach(client => {
-        //     console.log('[Back] Broadcast start');
-        //     console.debug(`[Back] Broadcast: ${client}`);
-        //     if (client.readyState === WebSocket.OPEN) {
-        //         console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'updateMessage', message: updatedMessage  })}`);
-        //         client.send(JSON.stringify({ action: 'updateMessage', message: updatedMessage  }));
-        //     }
-        //     console.log('[Back] Broadcast end');
-        // });
 
         console.log('[Back] /messages PUT end.');
         return c.json(updatedMessage, 200);
@@ -183,32 +156,18 @@ messages.delete('/:messageId', async (c) => {
         console.log('[Back] Prisma deleted');
 
         // [ブロードキャスト]
-        const clientIds = await getClientIds();
-        console.debug(`[Back] clients.size: ${clientIds.length}`);
-        clientIds.forEach(async (clientId) => {
+        const clients = getClients();
+        console.debug(`[Back] clients.size: ${clients.size}`);
+        clients.forEach(client => {
             console.log('[Back] Broadcast start');
-            const client = await getClient(clientId);
             console.debug(`[Back] Broadcast: ${client}`);
             
-            if (client) {
+            if (client.readyState === WebSocket.OPEN) {
                 console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'deleteMessage', messageId })}`);
                 client.send(JSON.stringify({ action: 'deleteMessage', messageId }));
             }
-
-            console.log('[Back] Broadcast end');
+            console.log('Broadcast end');
         });
-        // const clients = getClients();
-        // console.debug(`[Back] clients.size: ${clients.size}`);
-        // clients.forEach(client => {
-        //     console.log('[Back] Broadcast start');
-        //     console.debug(`[Back] Broadcast: ${client}`);
-            
-        //     if (client.readyState === WebSocket.OPEN) {
-        //         console.debug(`[Back] Broadcast send. ${JSON.stringify({ action: 'deleteMessage', messageId })}`);
-        //         client.send(JSON.stringify({ action: 'deleteMessage', messageId }));
-        //     }
-        //     console.log('Broadcast end');
-        // });
 
         console.log('[Back] /messages DELETE end.');
         return c.text('', 204);

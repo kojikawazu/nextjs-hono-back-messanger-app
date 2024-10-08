@@ -1,7 +1,6 @@
+# Hono + TypeScript + SupabaseによるメッセンジャーWeb API
 
-# My Messanger API
-
-# Tech
+## Tech
 ---
 
 - Backend
@@ -11,15 +10,22 @@
   - Supabase
 - ORM
   - Prisma ORM
-- Cloud
-  - AWS
-- IaC
-  - Terraform
+- Cloud Server
+  - XServer
 - Domain(お名前.com)
 
-# AWS
+- [不採用]
+  - Cloud
+    - AWS
+  - IaC
+    - Terraform
+
+# AWS(保留) → XServer
 
 以下をTerraformで構築。ドメインはお名前.comで購入。
+※ スケーリング時にバグ発生。バックエンドAPIを複数に変更するとWebSocketインスタンスの管理にミスが発生した。
+   おそらくAWS ALB スティッキーセッションの設定の変更が必要だった。
+   工数がかかりすぎたので、一旦XServerからサーバーをレンタルし、そこにサーバーを構築。
 
 - AWS
   - ECS or Fargate
@@ -36,6 +42,16 @@
   - IAM
   - Secret Manager
 
+## Architecture
+
+![アーキテクチャー](./drawio/messenger-back.drawio.png)
+
+## Frontend
+
+以下リポジトリ。
+
+https://github.com/kojikawazu/nextjs-hono-front-messanger-app
+
 # Memo
 ---
 
@@ -50,7 +66,7 @@
 
 - まだ移行していない機能は後に移行する。
 
-- CICDはひとまずGitHub Actions。AWSECRにコンテナイメージをプッシュする予定。
+- CICDはひとまずGitHub Actions。AWS ECRにコンテナイメージをプッシュする予定。
 
 # Execute
 ---
@@ -60,26 +76,16 @@ docker-compose.yml に Honoコンテナを設定して使用すること
 # URL
 ---
 
-- Bun
+- [Bun](https://bun.sh/guides/ecosystem/nextjs)
 
-https://bun.sh/guides/ecosystem/nextjs
+- [Hono](https://hono.dev/getting-started/basic)
 
-- Hono
+- [Supabase](https://supabase.com)
 
-https://hono.dev/getting-started/basic
+- [Prisma](https://www.prisma.io)
 
-- Supabase
+- [AWS](https://aws.amazon.com/jp/console/)
 
-https://supabase.com
+- [お名前.com](https://cp.onamae.ne.jp/login)
 
-- Prisma
-
-https://www.prisma.io
-
-- AWS
-
-https://aws.amazon.com/jp/console/
-
-- お名前.com
-
-https://cp.onamae.ne.jp/login
+- [XServer](https://www.xserver.ne.jp/)

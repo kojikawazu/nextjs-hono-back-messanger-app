@@ -20,14 +20,13 @@ jobs:
 
     - name: Package application
       run: |
-        ls -l
+        ls -al
         tar -czf app.tar.gz \
         --exclude=.git \
         --exclude=.github \
         --exclude=docker-compose \
         --exclude=drawio \
         --exclude=manuals \
-        --exclude=node_modules \
         --exclude=terraform \
         .
 

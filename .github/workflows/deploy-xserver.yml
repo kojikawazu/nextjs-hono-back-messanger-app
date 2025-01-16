@@ -23,13 +23,10 @@ jobs:
         tar -czf app.tar.gz \
         --exclude=.git \
         --exclude=.github \
-        --exclude=certs \
         --exclude=docker-compose \
-        --exclude=dist \
         --exclude=drawio \
         --exclude=manuals \
         --exclude=node_modules \
-        --exclude=private \
         --exclude=terraform \
         .
 

@@ -20,6 +20,7 @@ jobs:
 
     - name: Package application
       run: |
+        ls -l
         tar -czf app.tar.gz \
         --exclude=.git \
         --exclude=.github \

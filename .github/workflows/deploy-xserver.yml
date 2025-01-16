@@ -24,7 +24,7 @@ jobs:
         --exclude=.git \
         --exclude=.github \
         --exclude=certs \
-        --exclude=docer-compose \
+        --exclude=docker-compose \
         --exclude=dist \
         --exclude=drawio \
         --exclude=manuals \

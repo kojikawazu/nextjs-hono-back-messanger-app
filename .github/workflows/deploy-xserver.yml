@@ -20,15 +20,17 @@ jobs:
 
     - name: Package application
       run: |
-        ls -al
-        tar -czf app.tar.gz \
-        --exclude=.git \
-        --exclude=.github \
-        --exclude=docker-compose \
-        --exclude=drawio \
-        --exclude=manuals \
-        --exclude=terraform \
-        .
+        mkdir -p tmp_package
+        rsync -av \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='docker-compose' \
+          --exclude='drawio' \
+          --exclude='manuals' \
+          --exclude='terraform' \
+          ./ tmp_package/
+        tar -czf app.tar.gz -C tmp_package .
+        rm -rf tmp_package
 
     - name: Deploy application
       uses: appleboy/scp-action@v0.1.2
